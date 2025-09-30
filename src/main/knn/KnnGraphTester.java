@@ -726,8 +726,7 @@ public class KnnGraphTester {
       for (LeafReaderContext context : reader.leaves()) {
         LeafReader leafReader = context.reader();
         KnnVectorsReader vectorsReader =
-            ((PerFieldKnnVectorsFormat.FieldsReader) ((CodecReader) leafReader).getVectorReader())
-                .getFieldReader(KNN_FIELD);
+            ((CodecReader) leafReader).getVectorReader().unwrapReaderForField(KNN_FIELD);
         HnswGraph knnValues;
         if (vectorsReader instanceof Lucene99HnswVectorsReader hnswVectorsReader) {
           knnValues = hnswVectorsReader.getGraph(KNN_FIELD);

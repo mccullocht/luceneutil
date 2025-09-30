@@ -38,7 +38,7 @@ from common import getLuceneDirFromGradleProperties
 #
 # you may want to modify the following settings:
 
-DO_PROFILING = False
+DO_PROFILING = True
 
 # e.g. to compile KnnIndexer:
 #
@@ -56,32 +56,31 @@ PARAMS = {
   #'ndoc': (10000, 100000, 200000, 500000),
   #'ndoc': (10000, 100000, 200000, 500000),
   #'ndoc': (2_000_000,),
-  #'ndoc': (1_000_000,),
-  "ndoc": (500_000,),
+  'ndoc': (1_000_000,),
+  #"ndoc": (500_000,),
   #'ndoc': (50_000,),
-  "maxConn": (32, 64, 96),
+  #"maxConn": (32, 64, 96),
   # "maxConn": (64,),
-  #'maxConn': (32,),
-  "beamWidthIndex": (250, 500),
-  # "beamWidthIndex": (250,),
+  'maxConn': (32,),
+  #"beamWidthIndex": (250, 500),
+  "beamWidthIndex": (250,),
   #'beamWidthIndex': (50,),
-  "fanout": (20, 50, 100, 250),
-  # "fanout": (50,),
+  #"fanout": (20, 50, 100, 250),
+  "fanout": (100,),
   #'quantize': None,
-  #'quantizeBits': (32, 7, 4),
-  "numMergeWorker": (12,),
-  "numMergeThread": (4,),
+  #'quantizeBits': (4, 8),
+  "numMergeWorker": (8,),
+  "numMergeThread": (24,),
   "numSearchThread": (0,),
   #'numMergeWorker': (1,),
   #'numMergeThread': (1,),
   "encoding": ("float32",),
-  # 'metric': ('angular',),  # default is angular (dot_product)
+  'metric': ('angular',),  # default is angular (dot_product)
   # 'metric': ('mip',),
   #'quantize': (True,),
   "quantizeBits": (
-    4,
-    7,
-    32,
+    #4,
+    8,
   ),
   # "quantizeBits": (1,),
   # "overSample": (5,), # extra ratio of vectors to retrieve, for testing approximate scoring, e.g. quantized indices
@@ -92,8 +91,8 @@ PARAMS = {
   "quantizeCompress": (True,),
   # "indexType": ("flat", "hnsw"), # index type, only works with singlt bit
   "queryStartIndex": (0,),  # seek to this start vector before searching, to sample different vectors
-  "forceMerge": (False,),
-  #'niter': (10,),
+  "forceMerge": (True,),
+  'niter': (10_000,),
 }
 
 
@@ -140,9 +139,9 @@ def run_knn_benchmark(checkout, values):
   indexes = [0] * len(values.keys())
   indexes[-1] = -1
   args = []
-  dim = 100
-  doc_vectors = "%s/lucene_util/tasks/enwiki-20120502-lines-1k-100d.vec" % constants.BASE_DIR
-  query_vectors = "%s/lucene_util/tasks/vector-task-100d.vec" % constants.BASE_DIR
+  #dim = 100
+  #doc_vectors = "%s/lucene_util/tasks/enwiki-20120502-lines-1k-100d.vec" % constants.BASE_DIR
+  #query_vectors = "%s/lucene_util/tasks/vector-task-100d.vec" % constants.BASE_DIR
   # dim = 768
   # doc_vectors = '/lucenedata/enwiki/enwiki-20120502-lines-1k-mpnet.vec'
   # query_vectors = '/lucenedata/enwiki/enwiki-20120502.mpnet.vec'
@@ -158,9 +157,9 @@ def run_knn_benchmark(checkout, values):
   # query_vectors = '/d/electronics_query_vectors.bin'
 
   # Cohere dataset
-  # dim = 768
-  # doc_vectors = f"{constants.BASE_DIR}/data/cohere-wikipedia-docs-{dim}d.vec"
-  # query_vectors = f"{constants.BASE_DIR}/data/cohere-wikipedia-queries-{dim}d.vec"
+  dim = 768
+  doc_vectors = f"{constants.BASE_DIR}/data/cohere-wikipedia-docs-5M-{dim}d.vec"
+  query_vectors = f"{constants.BASE_DIR}/data/cohere-wikipedia-queries-{dim}d.vec"
   # doc_vectors = f"/lucenedata/enwiki/{'cohere-wikipedia'}-docs-{dim}d.vec"
   # query_vectors = f"/lucenedata/enwiki/{'cohere-wikipedia'}-queries-{dim}d.vec"
   parentJoin_meta_file = f"{constants.BASE_DIR}/data/{'cohere-wikipedia'}-metadata.csv"
@@ -237,8 +236,8 @@ def run_knn_benchmark(checkout, values):
         "8",
         "-metric",
         "mip",
-        "-parentJoin",
-        parentJoin_meta_file,
+        #"-parentJoin",
+        #parentJoin_meta_file,
         # '-numMergeThread', '8', '-numMergeWorker', '8',
         #'-forceMerge',
         #'-stats',
@@ -270,7 +269,7 @@ def run_knn_benchmark(checkout, values):
       raise RuntimeError(f"command failed with exit {job.returncode}")
     all_results.append((summary, args))
     if DO_PROFILING:
-      benchUtil.profilerOutput(constants.JAVA_EXE, jfr_output, benchUtil.checkoutToPath(checkout), 30, (1,))
+      benchUtil.profilerOutput(constants.JAVA_EXE, jfr_output, benchUtil.checkoutToPath(checkout), 30, (10,))
 
   if NOISY:
     print("\nResults:")
